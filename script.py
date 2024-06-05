@@ -199,10 +199,12 @@ def main(n,verbal = False):
     print("P1 : " + str(final_s1) +  " | P2 : " + str(final_s2))
 
 if __name__ == '__main__' :
+    N = 1000
+    print("NB Game per test : " + str(N))
     for i in range(-1,13):
         TRESHOLD = i
         print("TRESHOLD : " + str(TRESHOLD))
-        main(10000)
+        main(N)
 
 #################################@
 #           TESTS
