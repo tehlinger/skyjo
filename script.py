@@ -2,6 +2,13 @@ from random import shuffle
 
 TRESHOLD = 8
 
+def all_same_and_visible(items):
+    vals = [i[0] for i in items]
+    visible = [i[1] for i in items]
+    all_visible = all(visible)
+    all_same = all(x == vals[0] for x in vals)
+    return  all_same and all_visible
+
 def little_less_dumb_player(player,deck,discard,verbal = False):
     #modifie le player, mais renvoie le nouveau deck et le nouveau discard
     i = player.first_hidden_index()
@@ -77,7 +84,8 @@ class Player:
 
     def __str__(self):
         result = ""
-        for i in range(0,4):
+        n = len(self.grid)
+        for i in range(0,n):
             #padded_string = "|".join([str(j[0]).rjust(2,'0') for j in self.grid[i]])
             col = self.grid[i]
             padded_string = self.display_card_column(col)
@@ -114,6 +122,17 @@ class Player:
                 return False
         return True
 
+    def check_and_remove_triplets(self):
+        nb_cols = len(self.grid)
+        for i in range(0,nb_cols):
+            col = self.grid[i]
+            is_triplet = all_same_and_visible(col)
+            if is_triplet :
+                del(self.grid[i])
+                break
+        if len(self.grid) < nb_cols :
+            self.check_and_remove_triplets()
+
 class Game:
     def __init__(self,test=False):
         self.grid = []
@@ -137,6 +156,7 @@ class Game:
 
     def play_one_round(self,player):
             player.play_function(player,self.deck,self.discard)
+            player.check_and_remove_triplets()
             return player.check_all_visible()
 
     def play(self):
@@ -161,7 +181,7 @@ def play_one_game(verbal=False):
     g.play()
     s1 = g.player1.final_score()
     s2 = g.player2.final_score()
-    if verbal :
+    if verbal:
         print(str(g))
         print(g.player1.tag + " SCORE : " + str(s1))
         print(g.player2.tag + " SCORE : " + str(s2))
@@ -170,7 +190,7 @@ def play_one_game(verbal=False):
 def main(n,verbal = False):
     score_total_p1 = 0
     score_total_p2 = 0
-    for i in range(0,n):
+    for i in range(1,n+1):
         (s1,s2) = play_one_game(verbal)
         score_total_p1 += s1
         score_total_p2 += s2
@@ -184,3 +204,41 @@ if __name__ == '__main__' :
         print("TRESHOLD : " + str(TRESHOLD))
         main(10000)
 
+#################################@
+#           TESTS
+#################################@
+
+def test_triplets2():
+    p = get_test_player()
+    p.check_and_remove_triplets()
+    p.grid[0][0] = (18,False)
+    p.grid[0][1] = (18,False)
+    p.grid[0][2] = (18,False)
+    print(p)
+    p.check_and_remove_triplets()
+    print(p)
+    
+def test_triplets():
+    p = get_test_player()
+    p.check_and_remove_triplets()
+    p.replace_card(0,18)
+    p.replace_card(1,18)
+    p.grid[0][1] = (18,False)
+    p.replace_card(2,18)
+    p.replace_card(3,18)
+    p.replace_card(4,18)
+    p.replace_card(5,18)
+    p.replace_card(6,11)
+    p.replace_card(7,11)
+    p.replace_card(8,11)
+    p.replace_card(9,11)
+    p.replace_card(10,11)
+    p.replace_card(11,11)
+    print(p)
+    p.check_and_remove_triplets()
+    print(p)
+
+def tests():
+    test_triplets()
+    print("===========")
+    test_triplets2()
